@@ -1,0 +1,39 @@
+{
+  "name": "myfavors-server",
+  "version": "1.0.0",
+  "description": "Community App",
+  "main": "src/app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon src/app.js"
+  },
+  "keywords": [
+    "Node",
+    "App"
+  ],
+  "author": "Ryan M. Waite",
+  "license": "ISC",
+  "dependencies": {
+    "@sendgrid/mail": "^6.3.1",
+    "bcrypt-nodejs": "0.0.3",
+    "body-parser": "^1.18.3",
+    "client-sessions": "^0.8.0",
+    "cloudinary": "^1.13.2",
+    "cors": "^2.8.5",
+    "del": "^3.0.0",
+    "dotenv": "^6.2.0",
+    "express": "^4.16.4",
+    "express-device": "^0.4.2",
+    "express-fileupload": "^1.1.1-alpha.1",
+    "express-session": "^1.15.6",
+    "nodemon": "^1.18.9",
+    "nunjucks": "^3.1.6",
+    "pg": "^7.7.1",
+    "pg-hstore": "^2.3.2",
+    "sequelize": "^5.8.12",
+    "socket.io": "^2.2.0",
+    "sqlite": "^3.0.0",
+    "sqlite3": "^4.0.4",
+    "uuid": "^3.3.2"
+  }
+}

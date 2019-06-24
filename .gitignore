@@ -1,0 +1,5 @@
+# ignoring 
+
+node_modules/
+.env
+.env.bck
