@@ -17,7 +17,7 @@ const router = require('express').Router();
 
 router.get('/', GET.welcome);
 router.get('/signout', GET.sign_out);
-// router.get('/check_session', GET.check_session);
+router.get('/check_session', GET.check_session);
 // router.get('/get_random_users', GET.get_random_users);
 // router.get('/get_user_by_username/:username', GET.get_user_by_username);
 // router.get('/get_user_reviews/:user_id', GET.get_user_reviews);
