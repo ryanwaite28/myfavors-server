@@ -12,6 +12,33 @@ const app_secret = `9td25k!l0zraa4z9lfpo@j#WER}{Pojfugk8jgosryt87ktjrhrgf%#*&JYr
 const algorithm = 'aes-256-ctr';
 const token_separator = '|';
 
+const whitelist_domains = [
+  // dev origins
+  'http://localhost:7600',
+  'http://localhost:9500',
+
+  // prod origins
+  'https://rmw-myfavors-server.herokuapp.com',
+  'https://rmw-myfavors-client.herokuapp.com',
+];
+const corsOptions = {
+  // https://expressjs.com/en/resources/middleware/cors.html
+  origin: function (origin, callback) {
+    const originIsAllowed = whitelist_domains.includes(origin);
+    console.log({
+      origin,
+      callback,
+      originIsAllowed,
+    });
+    if (originIsAllowed) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
 
 
 const EVENT_TYPES = {
@@ -263,5 +290,7 @@ module.exports = {
   capitalize,
   generateToken,
   CheckToken,
-  SessionRequired
+  SessionRequired,
+  whitelist_domains,
+  corsOptions,
 }
