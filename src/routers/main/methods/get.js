@@ -30,18 +30,7 @@ function check_session(request, response) {
         return response.json({ online: true, session_id, user });
       }
       else {
-        let auth = request.get('Authorization'); // user's token
-        if(!auth) { return response.json({ error: true, online: false, message: 'No Authorization header' }); }
-        let token_record = await models.Tokens.findOne({ where: { token: auth } });
-        if(!token_record) { return response.json({ error: true, online: false, message: 'Auth token is invalid...' }); }
-        let token = token_record.dataValues;
-        if(token.ip_address !== request.ip || token.user_agent !== request.get('user-agent')) {
-          return response.json({ error: true, online: false, message: 'Token used from invalid client...' });
-        }
-        let get_user = await models.Users.findOne({ where: { id: token.user_id } });
-        let user = get_user.dataValues;
-        delete user['password'];
-        return response.json({ online: true, user, token: token.token });
+        return response.json({ error: true, online: false, message: 'No session...' });
       }
     }
     catch(e) {
