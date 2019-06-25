@@ -20,7 +20,7 @@ function sign_out(request, response) {
 }
 
 function check_session(request, response) {
-  console.log({ session: request.session, cookie: request.cookie });
+  console.log({ session: request.session, cookie: request.cookies });
   (async function() {
     try {
       if(request.session.id){
