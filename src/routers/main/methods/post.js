@@ -72,11 +72,17 @@ function sign_up(request, response) {
     password = bcrypt.hashSync(password);
     let new_user = await models.Users.create({ displayname, username, email, password });
     let user = new_user.dataValues;
-    let new_token = chamber.greatUniqueValue();
-    let new_session_token = await models.SessionTokens.create({ ip_address: request.ip, user_agent: request.get('user-agent'), user_id: user.id, token: new_token });
+    let new_token = chamber.generateToken(user.id);
+    models.Tokens.create({ 
+      ip_address: request.ip, 
+      user_agent: request.get('user-agent'), 
+      user_id: user.id, 
+      token: new_token,
+      device: request.device.type
+    });
     delete user['password'];
     request.session.id = chamber.uniqueValue();
-    response.locals.you = user;
+    request.session.you = user;
 
     // // send verification email
     // let host = request.get('host');
