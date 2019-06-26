@@ -38,15 +38,21 @@ function sign_in(request, response) {
     var user = check_account.dataValues;
     delete user['password'];
     request.session.id = chamber.uniqueValue();
-    response.locals.you = user;
+    request.session.you = user;
 
-    let session_token = await models.SessionTokens.findOne({ where: { ip_address: request.ip, user_agent: request.get('user-agent'), user_id: user.id } });
+    let session_token = await models.Tokens.findOne({ where: { ip_address: request.ip, user_agent: request.get('user-agent'), user_id: user.id } });
     if(session_token) {
       return response.json({ online: true, user, token: session_token.dataValues.token, message: 'Signed In!' });
     }
     else {
-      let new_token = chamber.greatUniqueValue();
-      let new_session_token = await models.SessionTokens.create({ ip_address: request.ip, user_agent: request.get('user-agent'), user_id: user.id, token: new_token });
+      let new_token = chamber.generateToken(user.id);
+      models.Tokens.create({ 
+        ip_address: request.ip, 
+        user_agent: request.get('user-agent'), 
+        user_id: user.id, 
+        token: new_token, 
+        device: request.device.type 
+      });
       return response.json({ online: true, user, token: new_token, message: 'Signed In!' });
     }
   })()
