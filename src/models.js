@@ -41,6 +41,7 @@ models.Users = sequelize.define('users', {
   uuid:            { type: Sequelize.STRING, unique: true, defaultValue: Sequelize.UUIDV1 }
 }, { freezeTableName: true, indexes: [{ unique: true, fields: ['email', 'username', 'uuid'] }] });
 
+// unused
 models.SessionTokens = sequelize.define('session_tokens', {
   token:           { type: Sequelize.STRING(500), unique: true, allowNull: false },
   ip_address:      { type: Sequelize.STRING(500), allowNull: false, defaultValue: '' },
@@ -49,6 +50,22 @@ models.SessionTokens = sequelize.define('session_tokens', {
   date_created:    { type: Sequelize.DATE, defaultValue: Sequelize.NOW },
   uuid:            { type: Sequelize.STRING, unique: true, defaultValue: Sequelize.UUIDV1 }
 }, { freezeTableName: true, indexes: [{ unique: true, fields: ['token', 'uuid'] }] });
+
+models.Tokens = sequelize.define('tokens', {
+  user_id:             { type: Sequelize.INTEGER, allowNull: false, references: { model: models.Users, key: 'id' } },
+  device:              { type: Sequelize.STRING(500), allowNull: false, unique: true },
+  token:               { type: Sequelize.STRING(500), allowNull: false, unique: true },
+  ip_address:          { type: Sequelize.STRING(500), allowNull: false },
+  user_agent:          { type: Sequelize.STRING(500), allowNull: false },
+  date_created:        { type: Sequelize.DATE, defaultValue: Sequelize.NOW },
+  date_last_used:      { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.NOW },
+  uuid:                { type: Sequelize.STRING, defaultValue: Sequelize.UUIDV1 }
+}, {
+  freezeTableName: true,
+  underscored: true,
+  modelName: 'token',
+  indexes: [{ unique: true, fields: ['uuid'] }]
+});
 
 models.ResetPasswordRequests = sequelize.define('reset_password_requests', {
     user_email:      { type: Sequelize.INTEGER, allowNull: false },
