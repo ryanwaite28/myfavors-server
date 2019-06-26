@@ -17,7 +17,7 @@ const sendgrid_manager = require('../../../sendgrid_manager');
 
 function sign_in(request, response) {
   (async function() {
-    if(request.session.id) { return response.json({ error: true, message: "Client already signed in", online: true, user: response.locals.you }) }
+    if(request.session.id) { return response.json({ error: true, message: "Client already signed in", online: true, user: request.session.you }) }
     let { email, password } = request.body;
     if(email) { email = email.toLowerCase(); }
     if(!email) {
