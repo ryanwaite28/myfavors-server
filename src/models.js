@@ -43,7 +43,7 @@ models.Users = sequelize.define('users', {
 
 models.Tokens = sequelize.define('tokens', {
   user_id:             { type: Sequelize.INTEGER, allowNull: false, references: { model: models.Users, key: 'id' } },
-  device:              { type: Sequelize.STRING(500), allowNull: false, unique: true },
+  device:              { type: Sequelize.STRING(500), allowNull: false },
   token:               { type: Sequelize.STRING(500), allowNull: false, unique: true },
   ip_address:          { type: Sequelize.STRING(500), allowNull: false },
   user_agent:          { type: Sequelize.STRING(500), allowNull: false },
