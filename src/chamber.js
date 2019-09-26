@@ -16,6 +16,7 @@ const whitelist_domains = [
   // dev origins
   'http://localhost:7600',
   'http://localhost:9500',
+  'http://localhost:5200',
 
   // prod origins
   'https://rmw-myfavors-server.herokuapp.com',

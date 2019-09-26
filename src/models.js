@@ -179,7 +179,8 @@ models.ApiKeys = sequelize.define('api_keys', {
     website:             { type: Sequelize.STRING, allowNull: false, defaultValue: '' },
     verified:            { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false },
     date_created:        { type: Sequelize.DATE, defaultValue: Sequelize.NOW },
-    requests_count:      { type: Sequelize.INTEGER, defaultValue: 0 }
+    requests_count:      { type: Sequelize.INTEGER, defaultValue: 0 },
+    uuid:                { type: Sequelize.STRING, unique: true, defaultValue: Sequelize.UUIDV1 }
 }, {
     freezeTableName: true,
     indexes: [{unique: true, fields: ['email', 'key'] }]
