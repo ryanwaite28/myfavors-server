@@ -34,6 +34,7 @@
     "socket.io": "^2.2.0",
     "sqlite": "^3.0.0",
     "sqlite3": "^4.0.4",
+    "typescript": "^3.7.4",
     "uuid": "^3.3.2"
   }
 }

@@ -15,20 +15,20 @@ function root_route(request, response) {
 }
 
 function get_user_by_username(request, response) {
-  let { username } = request.params;
+  const username = request.params.username;
   models.Users.findOne({ where: { username } })
-  .then(u => {
-    let user = u.dataValues;
+  .then(userModel => {
+    let user = userModel.get({ plain: true });
     delete user['password'];
     return response.json({ user });
   })
 }
 
 function get_user_by_id(request, response) {
-  let { id } = request.params;
+  const id = parseInt(request.params.id, 10);
   models.Users.findOne({ where: { id } })
-  .then(u => {
-    let user = u.dataValues;
+  .then(userModel => {
+    let user = userModel.get({ plain: true });
     delete user['password'];
     return response.json({ user });
   })

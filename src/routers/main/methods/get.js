@@ -17,7 +17,7 @@ function check_session(request, response) {
   console.log({ session: request.session, cookies: request.cookies });
   (async function() {
     try {
-      if(request.session.id){
+      if (request.session.id) {
         var get_user = await models.Users.findOne({ where: { id: request.session.you.id } });
         var user = get_user.dataValues;
         delete user['password'];

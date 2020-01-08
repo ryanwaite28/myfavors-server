@@ -8,7 +8,7 @@ const chamber = require('../../../chamber');
 const router = require('express').Router();
 
 router.get('/', GET.root_route);
-router.get('/:username', GET.get_user_by_username);
+router.get('/username/:username', GET.get_user_by_username);
 router.get('/:id', GET.get_user_by_id);
 router.get('/random', GET.get_random_users);
 router.get('/sign_out', GET.sign_out);
