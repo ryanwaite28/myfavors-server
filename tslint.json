@@ -13,8 +13,6 @@
     "ordered-imports": false,
     "quotemark": [true, "single"],
     "trailing-comma": false,
-    "member-access": false,
-    "no-unused-expression": false,
 
     "indent": [
       false,

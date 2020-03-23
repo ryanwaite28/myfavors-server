@@ -1,5 +1,9 @@
-# ignoring 
-
+# ignore
 node_modules/
+build/
 .env
-.env.bck
+./*.png
+./*.jpg
+./*.jpeg
+./*.gif
+database.sqlite
