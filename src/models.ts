@@ -4,7 +4,6 @@ import {
   Model,
   DataTypes
 } from 'sequelize';
-import { IUserModel } from './interfaces/all.interface';
 
 
 

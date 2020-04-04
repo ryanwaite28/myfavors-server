@@ -21,12 +21,10 @@ export function send_email(from: string, to: string, subject: string, html: stri
     sgMail.send(email)
     .then((result: any) => {
       console.log('email sent ---');
-      // console.log(result);
       return resolve({ error: false });
     })
     .catch((error: any) => {
-      console.log('email failed ---');
-      // console.log(error);
+      console.log('email failed ---', error);
       return reject({ error });
     });
   });

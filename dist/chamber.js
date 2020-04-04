@@ -340,13 +340,15 @@ exports.whitelist_domains = [
     'http://localhost:8080',
     'http://localhost:7600',
     'http://localhost:9500',
+    'http://localhost:4200',
     'https://ryanwaite28.github.io',
     'http://rmw-my-favors-client.herokuapp.com',
     'https://rmw-my-favors-client.herokuapp.com',
 ];
 exports.corsOptions = {
     origin(origin, callback) {
-        const originIsAllowed = exports.whitelist_domains.includes(origin);
+        const useOrigin = (origin || '');
+        const originIsAllowed = exports.whitelist_domains.includes(useOrigin);
         console.log({
             origin,
             callback,

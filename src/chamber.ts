@@ -343,6 +343,7 @@ export const whitelist_domains = [
   'http://localhost:8080',
   'http://localhost:7600',
   'http://localhost:9500',
+  'http://localhost:4200',
 
   // prod origins
   'https://ryanwaite28.github.io',
@@ -353,7 +354,8 @@ export const whitelist_domains = [
 export const corsOptions: CorsOptions = {
   // https://expressjs.com/en/resources/middleware/cors.html
   origin(origin: string | undefined, callback: any) {
-    const originIsAllowed = whitelist_domains.includes((origin as string));
+    const useOrigin = (origin || '');
+    const originIsAllowed = whitelist_domains.includes(useOrigin);
     console.log({
       origin,
       callback,

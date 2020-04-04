@@ -8,7 +8,7 @@ const sendgrid_manager_1 = require("../sendgrid-manager");
 const template_engine_1 = require("../template-engine");
 const chamber_1 = require("../chamber");
 class UserService {
-    static root_route(request, response) {
+    static main(request, response) {
         return tslib_1.__awaiter(this, void 0, void 0, function* () {
             return response.json({ msg: 'users router' });
         });
@@ -153,18 +153,25 @@ class UserService {
             const createInfo = { displayname, username, email, password: hash };
             const new_user = yield models_1.Users.create(createInfo);
             const user = new_user.dataValues;
+            request.session.id = chamber_1.uniqueValue();
+            request.session.you = Object.assign({}, user);
+            request.session.youModel = new_user;
+            delete user.password;
             const new_token = chamber_1.uniqueValue();
-            models_1.Tokens.create({
+            const tokenCreateOptions = {
                 ip_address: request.ip,
                 user_agent: request.get('user-agent'),
                 user_id: user.id,
                 token: new_token,
                 device: request.device.type
+            };
+            models_1.Tokens.create(tokenCreateOptions)
+                .then((tokenModel) => {
+                console.log(`token created`);
+            })
+                .catch((error) => {
+                console.log(`could not create token`, error);
             });
-            request.session.id = chamber_1.uniqueValue();
-            request.session.you = Object.assign({}, user);
-            request.session.youModel = new_user;
-            delete user.password;
             const host = request.get('origin');
             const uuid = user.uuid;
             const verify_link = host.endsWith('/')
@@ -176,7 +183,13 @@ class UserService {
                 .then(email_results => {
                 console.log({ signed_up: email_results });
             });
-            const responseData = { online: true, user, message: 'Signed Up!', token: new_token, session_id: request.session.id };
+            const responseData = {
+                online: true,
+                user,
+                message: 'Signed Up!',
+                token: new_token,
+                session_id: request.session.id
+            };
             return response.status(200).json(responseData);
         });
     }
@@ -217,20 +230,44 @@ class UserService {
             delete user.password;
             request.session.id = chamber_1.uniqueValue();
             request.session.you = user;
-            let session_token_model = yield models_1.Tokens.findOne({ where: { ip_address: request.ip, user_agent: request.get('user-agent'), user_id: user.id } });
+            const searchTokenWhereClause = {
+                ip_address: request.ip,
+                user_agent: request.get('user-agent'),
+                user_id: user.id
+            };
+            const session_token_model = yield models_1.Tokens.findOne({ where: searchTokenWhereClause });
             if (session_token_model) {
-                return response.json({ online: true, user, token: session_token_model.get('token'), message: 'Signed In!' });
+                const responseJson = {
+                    online: true,
+                    user,
+                    token: session_token_model.get('token'),
+                    message: 'Signed In!'
+                };
+                return response.json(responseJson);
             }
             else {
-                let new_token = chamber_1.uniqueValue();
-                models_1.Tokens.create({
+                const new_token = chamber_1.uniqueValue();
+                const tokenCreateOptions = {
                     ip_address: request.ip,
                     user_agent: request.get('user-agent'),
                     user_id: user.id,
                     token: new_token,
                     device: request.device.type
+                };
+                models_1.Tokens.create(tokenCreateOptions)
+                    .then((tokenModel) => {
+                    console.log(`token created`);
+                })
+                    .catch((error) => {
+                    console.log(`could not create token`, error);
                 });
-                return response.json({ online: true, user, token: new_token, message: 'Signed In!' });
+                const responseJson = {
+                    online: true,
+                    user,
+                    token: new_token,
+                    message: 'Signed In!'
+                };
+                return response.json(responseJson);
             }
         });
     }

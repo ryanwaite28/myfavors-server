@@ -12,9 +12,10 @@ const express_fileupload = require("express-fileupload");
 const body_parser = require("body-parser");
 const chamber_1 = require("./chamber");
 const template_engine_1 = require("./template-engine");
-const user_service_1 = require("./services/user.service");
-const PORT = process.env.PORT || 8000;
+const _main_router_1 = require("./routers/_main.router");
+const PORT = process.env.PORT || 6700;
 const app = express();
+template_engine_1.installExpressApp(app);
 app.use(express_fileupload({ safeFileNames: true, preserveExtension: true }));
 app.use(express_device.capture());
 app.use(body_parser.json());
@@ -29,7 +30,6 @@ app.use(client_sessions({
         secure: false,
     }
 }));
-template_engine_1.installExpressApp(app);
 const server = http.createServer(app);
 const io = socket_io(server);
 io.on('connection', (socket) => {
@@ -39,8 +39,9 @@ app.use((request, response, next) => {
     request.io = io;
     next();
 });
-app.get('', user_service_1.UserService.root_route);
-const binPath = path.join(__dirname, '../_bin');
-app.use(express.static(binPath));
+app.use('/main', _main_router_1.MainRouter);
+const publicPath = path.join(__dirname, '../_public');
+const expressStaticPublicPath = express.static(publicPath);
+app.use(expressStaticPublicPath);
 server.listen(PORT);
 console.log(`Listening on port ${PORT}...`);

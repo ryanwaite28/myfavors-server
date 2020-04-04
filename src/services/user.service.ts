@@ -26,7 +26,7 @@ import {
 } from '../chamber';
 
 export class UserService {
-  static async root_route(request: Request, response: Response) {
+  static async main(request: Request, response: Response) {
     return response.json({ msg: 'users router' });
   }
 
@@ -170,18 +170,26 @@ export class UserService {
     const createInfo = { displayname, username, email, password: hash };
     const new_user = await Users.create(createInfo);
     const user = (<any> new_user).dataValues;
+    (<any> request).session.id = uniqueValue();
+    (<any> request).session.you = { ...user };
+    (<any> request).session.youModel = new_user;
+    delete user.password;
+
     const new_token = uniqueValue();
-    Tokens.create({
+    const tokenCreateOptions = {
       ip_address: request.ip,
       user_agent: request.get('user-agent'),
       user_id: user.id,
       token: new_token,
       device: (<any> request).device.type
-    });
-    (<any> request).session.id = uniqueValue();
-    (<any> request).session.you = { ...user };
-    (<any> request).session.youModel = new_user;
-    delete user.password;
+    };
+    Tokens.create(tokenCreateOptions)
+      .then((tokenModel) => {
+        console.log(`token created`);
+      })
+      .catch((error) => {
+        console.log(`could not create token`, error);
+      });
   
     /** Email Sign up and verify */
     const host: string = request.get('origin')!;
@@ -189,7 +197,6 @@ export class UserService {
     const verify_link = (<string> host).endsWith('/')
       ? (host + 'verify-account/' + uuid)
       : (host + '/verify-account/' + uuid);
-  
     const email_subject = 'My Favors - Signed Up!';
     const email_html = SignedUp_EMAIL({ ...(<IRequest> request).session.you, name: user.displayname, verify_link });
     // don't "await" for email response.
@@ -198,7 +205,13 @@ export class UserService {
         console.log({ signed_up: email_results });
       }); 
   
-    const responseData = { online: true, user, message: 'Signed Up!', token: new_token, session_id: (<any> request).session.id };
+    const responseData = {
+      online: true,
+      user,
+      message: 'Signed Up!',
+      token: new_token,
+      session_id: (<any> request).session.id
+    };
     return response.status(200).json(responseData);
   }
 
@@ -239,20 +252,44 @@ export class UserService {
     (<IRequest> request).session.id = uniqueValue();
     (<IRequest> request).session.you = user;
 
-    let session_token_model = await Tokens.findOne({ where: { ip_address: request.ip, user_agent: request.get('user-agent')!, user_id: user.id } });
+    const searchTokenWhereClause = {
+      ip_address: request.ip,
+      user_agent: request.get('user-agent')!,
+      user_id: user.id
+    };
+    const session_token_model = await Tokens.findOne({ where: searchTokenWhereClause });
     if(session_token_model) {
-      return response.json({ online: true, user, token: session_token_model.get('token'), message: 'Signed In!' });
+      const responseJson = {
+        online: true,
+        user,
+        token: session_token_model.get('token'),
+        message: 'Signed In!'
+      };
+      return response.json(responseJson);
     }
     else {
-      let new_token = uniqueValue();
-      Tokens.create({ 
+      const new_token = uniqueValue();
+      const tokenCreateOptions = { 
         ip_address: request.ip, 
         user_agent: request.get('user-agent'), 
         user_id: user.id, 
         token: new_token, 
         device: (<IRequest> request).device!.type 
-      });
-      return response.json({ online: true, user, token: new_token, message: 'Signed In!' });
+      };
+      Tokens.create(tokenCreateOptions)
+        .then((tokenModel) => {
+          console.log(`token created`);
+        })
+        .catch((error) => {
+          console.log(`could not create token`, error);
+        });
+      const responseJson = {
+        online: true,
+        user,
+        token: new_token,
+        message: 'Signed In!'
+      };
+      return response.json(responseJson);
     }
   }
 }

@@ -23,7 +23,7 @@ function send_email(from, to, subject, html) {
             return resolve({ error: false });
         })
             .catch((error) => {
-            console.log('email failed ---');
+            console.log('email failed ---', error);
             return reject({ error });
         });
     });

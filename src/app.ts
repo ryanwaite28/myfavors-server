@@ -3,7 +3,6 @@ dotenv.config();
 // @ts-ignore
 import * as express from 'express';
 import * as path from 'path';
-import * as cors from 'cors';
 import * as socket_io from 'socket.io';
 import * as http from 'http';
 import * as client_sessions from 'client-sessions';
@@ -20,15 +19,16 @@ import {
   IRequest,
   IResponse
 } from './interfaces/all.interface';
-import { UserService } from './services/user.service';
+import { MainRouter } from './routers/_main.router';
 
 
 
 /** Setup */
 
-const PORT: string | number = process.env.PORT || 8000;
+const PORT: string | number = process.env.PORT || 6700;
 const app: express.Application = express();
 
+installExpressApp(app);
 app.use(express_fileupload({ safeFileNames: true, preserveExtension: true }));
 app.use(express_device.capture());
 app.use(body_parser.json());
@@ -44,8 +44,6 @@ app.use(client_sessions({
   }
 }));
 
-installExpressApp(app);
-
 const server: http.Server = http.createServer(app);
 const io: socket_io.Server = socket_io(server);
 
@@ -53,35 +51,28 @@ io.on('connection', (socket) => {
   console.log('new socket:', );
 });
 
-app.use((request: express.Request, response: express.Response, next: express.NextFunction) => {
+app.use((
+  request: express.Request, 
+  response: express.Response, 
+  next: express.NextFunction
+) => {
   (<IRequest> request).io = io;
   next();
 });
 
 
 
-/** Routes */
+/** Mount Sub-Routers to Main Application */
 
-// GET Routes
-app.get('', UserService.root_route);
-
-
-// POST Routes
-
-
-
-// PUT Routes
-
-
-
-// DELETE Routes
+app.use('/main', MainRouter);
 
 
 
 /** Static file declaration */
 
-const binPath = path.join(__dirname, '../_bin');
-app.use(express.static(binPath));
+const publicPath = path.join(__dirname, '../_public');
+const expressStaticPublicPath = express.static(publicPath);
+app.use(expressStaticPublicPath);
 
 
 
