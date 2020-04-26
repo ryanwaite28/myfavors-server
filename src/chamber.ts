@@ -7,7 +7,10 @@ import { v4 as uuidv4 } from 'uuid';
 // @ts-ignore
 import * as crypto from 'crypto';
 // @ts-ignore
-import { models } from './models';
+import {
+  Users,
+  Tokens
+} from './models';
 import {
   Request,
   Response,
@@ -278,51 +281,70 @@ export function CheckToken(request: Request, response: Response, next: NextFunct
     }
 
     // check if token is in the database
-    const token_record = await (models as any).Tokens
-      .findOne({ where: {
+    const token_record = await (<any> Tokens).findOne({
+      where: {
         token: auth,
         user_agent: request.get('User-Agent'),
-        device: (request as any).device.type }
-      });
+        device: (request as any).device.type
+      }
+    });
     if (!token_record) {
-      return response.json({ error: true, message: 'Token does not exist' });
+      return response.status(400).json({
+        error: true,
+        message: 'Token does not exist'
+      });
     }
     if (token_record.dataValues.user_id !== user_id) {
-      return response.json({ error: true, message: 'Token not authorized' });
+      return response.status(401).json({
+        error: true,
+        message: 'Token not authorized'
+      });
     }
-    const user_record = await (models as any).Users.findOne({ where: { id: user_id } });
+    const user_record = await Users.findOne({ where: { id: user_id } });
     if (!user_record) {
-      return response.json({ error: true, message: 'Token does not match for any user' });
+      return response.status(401).json({
+        error: true,
+        message: 'Token does not match for any user'
+      });
     }
 
-    response.locals.auth = { user_id, user_record, token_record };
     return next();
   })();
 }
 
-export function SessionRequired(request: Request, response: Response, next: NextFunction) {
-  console.log('auth called');
-  (async () => {
-    const sessionId = (<any> request).session.id;
-    if (!sessionId) {
-      const auth = request.get('Authorization'); // user's token
-      if (!auth) { return response.status(401).json({ error: true, message: 'No Authorization header...' }); }
-      const token_record = await (models as any).Tokens.findOne({ where: { token: auth } });
-      if (!token_record) { return response.status(401).json({ error: true, message: 'Auth token is invalid...' }); }
-      const token = token_record.dataValues;
-      if (token.user_agent !== request.get('user-agent')) {
-        return response.status(401).json({ error: true, message: 'Token used from invalid client...' });
-      }
-      const get_user = await (models as any).Users.findOne({ where: { id: token.user_id } });
-      const user = get_user.dataValues;
-      delete user.password;
-      response.locals.you = user;
-      return next();
-    } else {
-      response.locals.you = (request as any).session.you;
-      return next();
-    }
-  })();
+export async function SessionRequired(
+  request: Request,
+  response: Response,
+  next: NextFunction
+) {
+  const sessionId = (<any> request).session.id;
+  if (sessionId) {
+    return next();
+  }
+  
+  const auth = request.get('Authorization'); // user's token
+  if (!auth) {
+    return response.status(401).json({
+      error: true,
+      message: 'No Authorization header...'
+    });
+  }
+  const token_record = await Tokens.findOne({ where: { token: auth } });
+  if (!token_record) {
+    return response.status(401).json({
+      error: true,
+      message: 'Auth token is invalid...'
+    });
+  }
+  const token = (<any> token_record).dataValues;
+  if (token.user_agent !== request.get('user-agent')) {
+    return response.status(401).json({
+      error: true,
+      message: 'Token used from invalid client...'
+    });
+  }
+
+  return next();
 }
 
 export function UserAuthorized(request: Request, response: Response, next: NextFunction) {

@@ -24,6 +24,14 @@ import {
   validatePassword,
   uniqueValue
 } from '../chamber';
+import {
+  get_random_users,
+  get_user_by_id,
+  get_user_by_email,
+  get_user_by_username,
+  get_user_by_email_or_username,
+
+} from '../repos/users.repo';
 
 export class UserService {
   static async main(request: Request, response: Response) {
@@ -49,45 +57,38 @@ export class UserService {
 
   static async get_user_by_username(request: Request, response: Response) {
     const username = request.params.username;
-    const userModel = await Users.findOne({ where: { username } });
-    let user: IUserModel = (userModel && userModel.get({ plain: true }) || {}) as IUserModel;
-    delete user.password;
+    const user = get_user_by_username(username);
     return response.json({ user });
   }
   
   static async get_user_by_id(request: Request, response: Response) {
     const id = parseInt(request.params.id, 10);
-    const userModel = await Users.findOne({ where: { id } });
-    let user: IUserModel = (userModel && userModel.get({ plain: true }) || {}) as IUserModel;
-    delete user.password;
+    const user = get_user_by_id(id);
     return response.json({ user });
   }
   
   static async get_random_users(request: Request, response: Response) {
-    const users = await Users.findAll({
-      limit: 10,
-      order: [fn( 'RANDOM' )],
-      attributes: [
-        'id',
-        'displayname',
-        'username',
-        'icon_link',
-        'uuid',
-        'createdAt',
-        'updatedAt',
-      ]
-    });
+    const limit = request.params.limit
+      ? parseInt(request.params.limit, 10)
+      : 10;
+    const users = await get_random_users(limit);
     return response.json({ users });
   }
   
   static async sign_out(request: Request, response: Response) {
     (<IRequest> request).session.reset();
-    return response.json({ online: false, successful: true });
+    return response.json({
+      online: false,
+      successful: true
+    });
   }
 
   static async sign_up (request: Request, response: Response) {
     if ((<any> request).session.id) {
-      return response.status(400).json({ error: true, message: 'Client already signed in' });
+      return response.status(400).json({
+        error: true,
+        message: 'Client already signed in'
+      });
     }
   
     const displayname = request.body.displayname;
@@ -159,7 +160,7 @@ export class UserService {
       });
     }
   
-    const check_email = await Users.findOne({ where: { email } });
+    const check_email = await get_user_by_email(email);
     if (check_email) {
       return response.status(401).json({ error: true, message: 'Email already in use' });
     }
@@ -228,26 +229,36 @@ export class UserService {
     let { email, password } = request.body;
     if(email) { email = email.toLowerCase(); }
     if(!email) {
-      return response.json({ error: true, message: 'Email Address field is required' });
+      return response.status(400).json({
+        error: true,
+        message: 'Email Address field is required'
+      });
     }
     if(!password) {
-      return response.json({ error: true, message: 'Password field is required' });
+      return response.status(400).json({
+        error: true,
+        message: 'Password field is required'
+      });
     }
-    const check_account_model = await Users.findOne({
-      where: { [Op.or]: [{email: email}, {username: email}] }
-    });
-    const check_account = (
-      check_account_model 
-        ? check_account_model.get({ plain: true })
-        : null
-    ) as IUserModel;
-    if(!check_account) {
-      return response.json({ error: true, message: 'Invalid credentials.' });
+    const check_account_model = await get_user_by_email_or_username(email);
+    const check_account = check_account_model || null;
+    if (!check_account) {
+      return response.status(401).json({
+        error: true,
+        message: 'Invalid credentials.'
+      });
     }
-    if(bcrypt.compareSync(password, check_account.password) === false) {
-      return response.json({ error: true, message: 'Invalid credentials.' });
+    const badPassword = bcrypt.compareSync(
+      password,
+      check_account.password
+    ) === false;
+    if (badPassword) {
+      return response.status(401).json({
+        error: true,
+        message: 'Invalid credentials.'
+      });
     }
-    var user = check_account;
+    let user = check_account;
     delete user.password;
     (<IRequest> request).session.id = uniqueValue();
     (<IRequest> request).session.you = user;
